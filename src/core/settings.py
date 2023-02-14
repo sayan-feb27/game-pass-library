@@ -11,9 +11,7 @@ BASE_DIR = pathlib.Path(__file__).parent.parent.parent.resolve()
 
 
 class AppSettings(BaseSettings):
-    project_name: str = "Stonks"
-    project_host: str = "0.0.0.0"
-    project_port: int = 8000
+    project_name: str = "GamePass Library"
     database_dsn: PostgresDsn
 
     class Config:
