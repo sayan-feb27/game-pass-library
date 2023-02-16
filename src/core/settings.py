@@ -3,7 +3,7 @@ from logging import config as logging_config
 
 from pydantic import BaseSettings, PostgresDsn
 
-from core.logger import LOGGING
+from src.core.logger import LOGGING
 
 
 logging_config.dictConfig(LOGGING)
@@ -19,3 +19,13 @@ class AppSettings(BaseSettings):
 
 
 app_settings = AppSettings()
+
+TORTOISE_ORM = {
+    "connections": {"default": app_settings.database_dsn},
+    "apps":        {
+        "models": {
+            "models": ["src.models.game", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+}
