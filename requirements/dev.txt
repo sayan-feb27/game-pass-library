@@ -1,0 +1,3 @@
+-r main.txt
+
+pygsheets==2.0.6
