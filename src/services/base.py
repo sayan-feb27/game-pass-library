@@ -42,13 +42,14 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
     async def create(self, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self._model(**obj_in_data)
-        db_obj.save()
+        await db_obj.save()
         return db_obj
 
     async def update(self, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> ModelType:
         # TODO:
         pass
 
-    async def delete(self, *, obj_id: int) -> ModelType:
-        # TODO:
-        pass
+    async def delete(self, *, obj_id: Any) -> ModelType:
+        obj = await self._model.get(pk=obj_id)
+        await obj.delete()
+        return obj
