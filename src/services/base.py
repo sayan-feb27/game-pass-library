@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from tortoise.models import Model as DBBaseModel
 
-
 ModelType = TypeVar("ModelType", bound=DBBaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
@@ -32,17 +31,19 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
     def __init__(self, model: Type[ModelType]):
         self._model = model
 
-    async def get(self, obj_id: Any) -> Optional[ModelType]:
-        # TODO:
-        pass
+    async def get(self, obj_id: Any) -> ModelType | None:
+        obj = await self._model.filter(pk=obj_id).first()
+        return obj
 
-    async def get_multi(self, *, skip=0, limit=100) -> List[ModelType]:
-        # TODO:
-        pass
+    async def get_multi(self, *, skip=0, limit=100) -> list[ModelType]:
+        objs = await self._model.all().offset(skip).limit(limit=limit)
+        return objs
 
     async def create(self, *, obj_in: CreateSchemaType) -> ModelType:
-        # TODO:
-        pass
+        obj_in_data = jsonable_encoder(obj_in)
+        db_obj = self._model(**obj_in_data)
+        db_obj.save()
+        return db_obj
 
     async def update(self, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> ModelType:
         # TODO:
