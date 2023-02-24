@@ -47,8 +47,9 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
 
     async def update(self, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
-        await self._model.filter(pk=db_obj.pk).update(**obj_in_data)
-        return db_obj
+        updated_obj = db_obj.update_from_dict(obj_in_data)
+        await updated_obj.save(update_fields=obj_in_data.keys())
+        return updated_obj
 
     async def delete(self, *, obj_id: Any) -> ModelType:
         obj = await self._model.get(pk=obj_id)

@@ -1,7 +1,6 @@
 from enum import Enum
 
 from tortoise import fields, models
-from tortoise.contrib.pydantic import pydantic_model_creator
 
 
 class StatusEnum(Enum):
@@ -14,12 +13,18 @@ class StatusEnum(Enum):
 class System(models.Model):
     name = fields.CharField(pk=True, max_length=50)
 
+    class Meta:
+        ordering = ["name"]
+
     def __str__(self):
         return self.name
 
 
 class Genre(models.Model):
     name = fields.CharField(pk=True, max_length=50)
+
+    class Meta:
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -28,6 +33,9 @@ class Genre(models.Model):
 class ESRB(models.Model):
     code = fields.CharField(pk=True, max_length=30)
     description = fields.TextField()
+
+    class Meta:
+        ordering = ["code"]
 
     def __str__(self):
         return self.code
@@ -45,6 +53,9 @@ class Game(models.Model):
     genres = fields.ManyToManyField("models.Genre", related_name="games")
     x_exclusive = fields.BooleanField(default=False)
     esrb = fields.ForeignKeyField("models.ESRB", on_delete=fields.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.id}: {self.title}"
