@@ -25,7 +25,7 @@ async def read_genre(*, genre_name: str) -> Genre:
 
 
 @router.post("/", response_model=Genre, status_code=status.HTTP_201_CREATED)
-async def create_entity(
+async def create_genre(
     *,
     genre_in: GenreCreate
 ) -> Genre:
@@ -37,7 +37,7 @@ async def create_entity(
 
 
 @router.delete("/{genre_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_entity(
+async def delete_genre(
     *,
     genre_name: str
 ) -> None:
