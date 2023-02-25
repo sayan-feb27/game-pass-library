@@ -1,13 +1,23 @@
 from enum import Enum
+from typing import Optional
 
 from tortoise import fields, models
-
+from typing import Union
 
 class StatusEnum(Enum):
     ACTIVE = "Active"
     COMING_SOON = "Coming soon"
     REMOVED = "Removed"
     LEAVING_SOON = "Leaving soon"
+
+    @classmethod
+    def get_by_value(cls, status: Union[str, "StatusEnum"]) -> Optional["StatusEnum"]:
+        value = status if type(status) == str else status.value
+        x = next((x for x in cls if x.value.strip().lower() == value.strip().lower()), None)
+        if not x:
+            print()
+            raise Exception(x)
+        return x
 
 
 class System(models.Model):
@@ -56,6 +66,7 @@ class Game(models.Model):
 
     class Meta:
         ordering = ["id"]
+        # unique_together = ["title", "date_released"]
 
     def __str__(self):
         return f"{self.id}: {self.title}"
