@@ -1,5 +1,6 @@
-from src.models.game import ESRB as ESRBModel
 from schemas.esrb import ESRBCreate, ESRBUpdate
+from src.models.game import ESRB as ESRBModel
+
 from .base import RepositoryDB
 
 

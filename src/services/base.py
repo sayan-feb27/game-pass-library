@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
 from tortoise.models import Model as DBBaseModel
 
 ModelType = TypeVar("ModelType", bound=DBBaseModel)
@@ -10,7 +10,6 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class Repository:
-
     def get(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -45,7 +44,9 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
         await db_obj.save()
         return db_obj
 
-    async def update(self, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> ModelType:
+    async def update(
+        self, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+    ) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         updated_obj = db_obj.update_from_dict(obj_in_data)
         await updated_obj.save(update_fields=obj_in_data.keys())

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from src.services.genre import genre_crud
 from src.schemas.genre import Genre, GenreCreate
+from src.services.genre import genre_crud
 
 router = APIRouter()
 
@@ -25,10 +25,7 @@ async def read_genre(*, genre_name: str) -> Genre:
 
 
 @router.post("/", response_model=Genre, status_code=status.HTTP_201_CREATED)
-async def create_genre(
-    *,
-    genre_in: GenreCreate
-) -> Genre:
+async def create_genre(*, genre_in: GenreCreate) -> Genre:
     """
     Create new genre.
     """
@@ -37,15 +34,14 @@ async def create_genre(
 
 
 @router.delete("/{genre_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_genre(
-    *,
-    genre_name: str
-) -> None:
+async def delete_genre(*, genre_name: str) -> None:
     """
     Delete a genre.
     """
     genre = await genre_crud.get(obj_id=genre_name)
     if not genre:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     await genre_crud.delete(obj_id=genre_name)
     return

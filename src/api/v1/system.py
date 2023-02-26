@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from src.services.system import system_crud
 from src.schemas.system import System, SystemCreate
+from src.services.system import system_crud
 
 router = APIRouter()
 
@@ -25,10 +25,7 @@ async def read_system(*, system_name: str) -> System:
 
 
 @router.post("/", response_model=System, status_code=status.HTTP_201_CREATED)
-async def create_system(
-    *,
-    system_in: SystemCreate
-) -> System:
+async def create_system(*, system_in: SystemCreate) -> System:
     """
     Create new a system.
     """
@@ -37,15 +34,14 @@ async def create_system(
 
 
 @router.delete("/{system_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_system(
-    *,
-    system_name: str
-) -> None:
+async def delete_system(*, system_name: str) -> None:
     """
     Delete a system.
     """
     system = await system_crud.get(obj_id=system_name)
     if not system:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     await system_crud.delete(obj_id=system_name)
     return

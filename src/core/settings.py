@@ -5,7 +5,6 @@ from pydantic import BaseSettings, PostgresDsn
 
 from src.core.logger import LOGGING
 
-
 logging_config.dictConfig(LOGGING)
 BASE_DIR = pathlib.Path(__file__).parent.parent.parent.resolve()
 
@@ -15,14 +14,14 @@ class AppSettings(BaseSettings):
     database_dsn: PostgresDsn
 
     class Config:
-        env_file = pathlib.Path(BASE_DIR).joinpath('.env')
+        env_file = pathlib.Path(BASE_DIR).joinpath(".env")
 
 
 app_settings = AppSettings()
 
 TORTOISE_ORM = {
     "connections": {"default": app_settings.database_dsn},
-    "apps":        {
+    "apps": {
         "models": {
             "models": ["src.models.game", "aerich.models"],
             "default_connection": "default",

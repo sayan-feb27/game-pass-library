@@ -1,13 +1,13 @@
-import json
 import asyncio
 import datetime as dt
+import json
 from typing import Any
 
+from pydantic import BaseModel, Field
 from tortoise import Tortoise
-from pydantic import Field, BaseModel
 
 from src.core.settings import TORTOISE_ORM
-from src.models.game import Game, Genre, ESRB, System, StatusEnum
+from src.models.game import ESRB, Game, Genre, StatusEnum, System
 
 
 class RawGame(BaseModel):
@@ -28,25 +28,51 @@ class RawGame(BaseModel):
         self.__post_init__()
 
     def __post_init__(self):
-        self.systems = [x.strip() for x in self.systems.split("/") if x] if self.systems else []
-        self.x_exclusive = True if (
-            self.x_exclusive and type(self.x_exclusive) == str and self.x_exclusive.lower() == "exclusive") else False
-        self.genres = [x.strip() for x in self.genres.split("/") if x] if self.genres else []
-        self.date_added = dt.datetime.strptime(self.date_added, "%b %Y") if self.date_added else None
-        self.date_removed = dt.datetime.strptime(self.date_removed, "%b %Y").date() if self.date_removed else None
-        self.date_released = dt.datetime.strptime(self.date_released, "%b %Y").date() if self.date_released else None
+        self.systems = (
+            [x.strip() for x in self.systems.split("/") if x] if self.systems else []
+        )
+        self.x_exclusive = (
+            True
+            if (
+                self.x_exclusive
+                and type(self.x_exclusive) == str
+                and self.x_exclusive.lower() == "exclusive"
+            )
+            else False
+        )
+        self.genres = (
+            [x.strip() for x in self.genres.split("/") if x] if self.genres else []
+        )
+        self.date_added = (
+            dt.datetime.strptime(self.date_added, "%b %Y") if self.date_added else None
+        )
+        self.date_removed = (
+            dt.datetime.strptime(self.date_removed, "%b %Y").date()
+            if self.date_removed
+            else None
+        )
+        self.date_released = (
+            dt.datetime.strptime(self.date_released, "%b %Y").date()
+            if self.date_released
+            else None
+        )
         self.status = StatusEnum.get_by_value(status=self.status)
-        self.x_cloud = True if self.x_cloud and self.x_cloud.lower().strip() in ["yes", "1", "true"] else False
+        self.x_cloud = (
+            True
+            if self.x_cloud and self.x_cloud.lower().strip() in ["yes", "1", "true"]
+            else False
+        )
         self.esrb = self.esrb if self.esrb else None
 
 
 class GenreLoaderMixin:
-
     def extract_genres(self, raw_game_data: list[dict[str, Any]]) -> set[str]:
         result = set()
         genre_key = None
         for data in raw_game_data:
-            genre_key = genre_key or next((x for x in data.keys() if x.lower().startswith("genre")), None)
+            genre_key = genre_key or next(
+                (x for x in data.keys() if x.lower().startswith("genre")), None
+            )
             if genre_key is None:
                 raise Exception("Failed to find genre key in provided data.")
             game_genres = {x.strip() for x in data[genre_key].split("/") if x}
@@ -59,7 +85,6 @@ class GenreLoaderMixin:
 
 
 class SystemLoaderMixin:
-
     def extract_systems(self, raw_game_data: list[dict[str, Any]]) -> set[str]:
         result = set()
         for data in raw_game_data:
@@ -73,7 +98,6 @@ class SystemLoaderMixin:
 
 
 class ESRBLoaderMixin:
-
     def extract_esrb(self, raw_game_data: list[dict[str, Any]]) -> list[dict[str, str]]:
         result = []
         codes = set()
@@ -81,17 +105,16 @@ class ESRBLoaderMixin:
             code, description = data["ESRB"], data["ESRB Content Descriptors"]
             if not code or code in codes:
                 continue
-            esrb = {
-                "code": code,
-                "description": description
-            }
+            esrb = {"code": code, "description": description}
             result.append(esrb)
             codes.add(code)
         return result
 
     async def save_esrb(self, esrb_data: list[dict[str, str]]):
         tasks = [
-            ESRB(code=esrb["code"], description=esrb["description"]).save(force_update=True)
+            ESRB(code=esrb["code"], description=esrb["description"]).save(
+                force_update=True
+            )
             for esrb in esrb_data
         ]
         await asyncio.gather(*tasks)
@@ -102,7 +125,7 @@ class GameLoaderMixin:
         limit, offset = 100, 0
         raw_games = []
         while True:
-            batch = raw_data[offset:offset+limit]
+            batch = raw_data[offset : offset + limit]
             if not batch:
                 break
 

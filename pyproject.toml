@@ -2,3 +2,9 @@
 tortoise_orm = "src.core.settings.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./."
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint.format]
+max-line-length = "100"

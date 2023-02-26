@@ -1,5 +1,5 @@
-from tortoise.contrib.pydantic import pydantic_model_creator
 from pydantic import BaseModel
+from tortoise.contrib.pydantic import pydantic_model_creator
 
 from src.models.game import ESRB as ESRBModel
 

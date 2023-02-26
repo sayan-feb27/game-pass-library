@@ -1,9 +1,8 @@
 from fastapi import APIRouter
 
+from .esrb import router as esrb_router
 from .genre import router as genre_router
 from .system import router as system_router
-from .esrb import router as esrb_router
-
 
 api_router = APIRouter()
 api_router.include_router(genre_router, prefix="/genres", tags=["genres"])

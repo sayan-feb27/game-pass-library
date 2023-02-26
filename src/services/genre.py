@@ -1,5 +1,6 @@
-from src.models.game import Genre as GenreModel
 from schemas.genre import GenreCreate, GenreUpdate
+from src.models.game import Genre as GenreModel
+
 from .base import RepositoryDB
 
 

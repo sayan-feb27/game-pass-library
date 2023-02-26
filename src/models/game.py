@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 from tortoise import fields, models
-from typing import Union
+
 
 class StatusEnum(Enum):
     ACTIVE = "Active"
@@ -13,7 +13,9 @@ class StatusEnum(Enum):
     @classmethod
     def get_by_value(cls, status: Union[str, "StatusEnum"]) -> Optional["StatusEnum"]:
         value = status if type(status) == str else status.value
-        x = next((x for x in cls if x.value.strip().lower() == value.strip().lower()), None)
+        x = next(
+            (x for x in cls if x.value.strip().lower() == value.strip().lower()), None
+        )
         if not x:
             print()
             raise Exception(x)

@@ -22,8 +22,7 @@
 ### CI/CD
 
 - [ ] gitworkflows
-- [ ] linters
-- [ ] git hooks
+- [ ] git hooks: black, isort, mypy, pylint
 
 ### Deploy
 

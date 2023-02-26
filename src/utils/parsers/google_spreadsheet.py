@@ -5,7 +5,6 @@ from pygsheets.client import Client
 
 
 class GoogleSpreadSheetParser:
-
     def __init__(
         self,
         *,
@@ -33,11 +32,16 @@ if __name__ == "__main__":
 
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("url", help="url of a spreadsheet to parse")
-    arg_parser.add_argument("--service-file", dest="service_file",
-                            default="./credentials.json",
-                            help="path a file with your google credentials")
+    arg_parser.add_argument(
+        "--service-file",
+        dest="service_file",
+        default="./credentials.json",
+        help="path a file with your google credentials",
+    )
     arg_parser.add_argument("--header-row", type=int, default=1, dest="header_row")
-    arg_parser.add_argument("-o", "--output-to", dest="output_path", default="./gs_results.json")
+    arg_parser.add_argument(
+        "-o", "--output-to", dest="output_path", default="./gs_results.json"
+    )
 
     args = arg_parser.parse_args()
 

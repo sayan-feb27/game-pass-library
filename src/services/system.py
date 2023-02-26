@@ -1,5 +1,6 @@
-from src.models.game import System as SystemModel
 from schemas.system import SystemCreate, SystemUpdate
+from src.models.game import System as SystemModel
+
 from .base import RepositoryDB
 
 
