@@ -21,7 +21,7 @@ class RawGame(BaseModel):
     genres: str | list[str] = Field(alias="Genre (Giantbomb)")
     x_exclusive: str | bool = Field(alias="Xbox Series X|S")
     esrb: str | None = Field(alias="ESRB", default=None)
-    # TODO: esrb_description
+    esrb_description: str = Field(alias="ESRB Content Descriptors", default='')
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
@@ -65,83 +65,62 @@ class RawGame(BaseModel):
         self.esrb = self.esrb if self.esrb else None
 
 
-class GenreLoaderMixin:
-    def extract_genres(self, raw_game_data: list[dict[str, Any]]) -> set[str]:
-        result = set()
-        genre_key = None
-        for data in raw_game_data:
-            genre_key = genre_key or next(
-                (x for x in data.keys() if x.lower().startswith("genre")), None
-            )
-            if genre_key is None:
-                raise Exception("Failed to find genre key in provided data.")
-            game_genres = {x.strip() for x in data[genre_key].split("/") if x}
-            result = result.union(game_genres)
-        return result
+class JSONLoader:
 
-    async def save_genres(self, genres: set[str]):
-        tasks = [Genre(name=genre).save() for genre in genres]
-        await asyncio.gather(*tasks)
+    def __init__(self, file_path: str):
+        self.file_path: str = file_path
 
+    async def load(self):
+        await Tortoise.init(config=TORTOISE_ORM)
+        # transaction?
+        raw_game_data: list[RawGame] = self._read()
+        await self.save_systems(raw_data=raw_game_data)
+        await self.save_genres(raw_data=raw_game_data)
+        await self.save_esrbs(raw_data=raw_game_data)
 
-class SystemLoaderMixin:
-    def extract_systems(self, raw_game_data: list[dict[str, Any]]) -> set[str]:
-        result = set()
-        for data in raw_game_data:
-            game_systems = {x.strip() for x in data["System"].split("/") if x}
-            result = result.union(game_systems)
-        return result
+        saved_games = await self.save_games(raw_data=raw_game_data)
+        print(saved_games)
 
-    async def save_systems(self, systems: set[str]):
-        tasks = [System(name=system).save() for system in systems]
-        await asyncio.gather(*tasks)
+    def _read(self) -> list[RawGame]:
+        with open(self.file_path, "r") as file:
+            data = json.load(file)
+            return [RawGame(**game) for game in data]
 
+    async def save_systems(self, *, raw_data: list[RawGame]):
+        db_systems = []
+        for game in raw_data:
+            db_systems.extend([System(name=system) for system in game.systems])
+        await System.bulk_create(
+            db_systems, batch_size=100, ignore_conflicts=True)
 
-class ESRBLoaderMixin:
-    def extract_esrb(self, raw_game_data: list[dict[str, Any]]) -> list[dict[str, str]]:
-        result = []
-        codes = set()
-        for data in raw_game_data:
-            code, description = data["ESRB"], data["ESRB Content Descriptors"]
-            if not code or code in codes:
-                continue
-            esrb = {"code": code, "description": description}
-            result.append(esrb)
-            codes.add(code)
-        return result
+    async def save_genres(self, raw_data: list[RawGame]):
+        genres = []
+        for game in raw_data:
+            genres.extend([Genre(name=genre) for genre in game.genres])
+        await Genre.bulk_create(objects=genres, ignore_conflicts=True, batch_size=100)
 
-    async def save_esrb(self, esrb_data: list[dict[str, str]]):
-        tasks = [
-            ESRB(code=esrb["code"], description=esrb["description"]).save(
-                force_update=True
-            )
-            for esrb in esrb_data
-        ]
-        await asyncio.gather(*tasks)
+    async def save_esrbs(self, raw_data: list[RawGame]):
+        esrbs = [ESRB(code=game.esrb, description=game.esrb_description) for game in raw_data if game.esrb]
+        await ESRB.bulk_create(objects=esrbs, ignore_conflicts=True, batch_size=100)
 
-
-class GameLoaderMixin:
-    async def save_games(self, raw_data: list[dict[str, str]]):
+    async def save_games(self, *, raw_data: list[RawGame]):
         limit, offset = 100, 0
         raw_games = []
         while True:
-            batch = raw_data[offset : offset + limit]
+            batch = raw_data[offset: offset + limit]
             if not batch:
                 break
 
-            batch_raw_games = [RawGame(**game) for game in batch]
-            for raw_game in batch_raw_games:
-                await self.save_game(raw_game=raw_game)
+            for raw_game in batch:
+                await self.__save_game(raw_game=raw_game)
             offset += limit
-            raw_games.extend(batch_raw_games)
+            raw_games.extend(batch)
         return raw_games
 
-    async def save_game(self, raw_game: RawGame):
+    async def __save_game(self, raw_game: RawGame):
         game = await Game.create(**raw_game.dict(exclude={"systems", "genres", "esrb"}))
         game.esrb_id = raw_game.esrb
 
-        # TODO: keep records of created
-        # TODO: create if not exists
         systems = await System.filter(name__in=raw_game.systems).all()
         genres = await Genre.filter(name__in=raw_game.genres).all()
         await game.systems.add(*systems)
@@ -150,54 +129,13 @@ class GameLoaderMixin:
         await game.save()
 
 
-class JSONLoader(GenreLoaderMixin, SystemLoaderMixin, ESRBLoaderMixin, GameLoaderMixin):
-    # TODO: enum
-    GENRE = "GENRE"
-    SYSTEM = "SYSTEM"
-    ESRB = "ESRB"
-    GAME = "GAME"
-    MODELS = [GAME, GENRE, SYSTEM, ESRB]
-
-    def __init__(self, file_path: str, model: str):
-        self.file_path: str = file_path
-        self.model: str = model.upper()
-        if self.model not in self.MODELS:
-            raise Exception(f"Unknown mode {self.model}")
-
-    async def load(self):
-        await Tortoise.init(config=TORTOISE_ORM)
-        raw_game_data: list[dict[str, Any]] = self._read()
-        # TODO: simplify
-        match self.model:
-            case self.GENRE:
-                genres: set[str] = self.extract_genres(raw_game_data)
-                await self.save_genres(genres=genres)
-            case self.SYSTEM:
-                systems: set[str] = self.extract_systems(raw_game_data)
-                await self.save_systems(systems=systems)
-            case self.ESRB:
-                esrb_data: list[dict[str, str]] = self.extract_esrb(raw_game_data)
-                await self.save_esrb(esrb_data=esrb_data)
-            case self.GAME:
-                raw_games = await self.save_games(raw_game_data)
-                print(raw_games)
-            case _:
-                pass
-
-    def _read(self) -> list[dict[str, Any]]:
-        with open(self.file_path, "r") as file:
-            data = json.load(file)
-            return data
-
-
 if __name__ == "__main__":
     import argparse
 
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("file_path", help="path to json raw data")
-    arg_parser.add_argument("model", help="model to load")
 
     args = arg_parser.parse_args()
 
-    loader = JSONLoader(file_path=args.file_path, model=args.model)
+    loader = JSONLoader(file_path=args.file_path)
     asyncio.run(loader.load())
