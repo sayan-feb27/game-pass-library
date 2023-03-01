@@ -21,7 +21,7 @@ class RawGame(BaseModel):
     genres: str | list[str] = Field(alias="Genre (Giantbomb)")
     x_exclusive: str | bool = Field(alias="Xbox Series X|S")
     esrb: str | None = Field(alias="ESRB", default=None)
-    esrb_description: str = Field(alias="ESRB Content Descriptors", default='')
+    esrb_description: str = Field(alias="ESRB Content Descriptors", default="")
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
@@ -66,7 +66,6 @@ class RawGame(BaseModel):
 
 
 class JSONLoader:
-
     def __init__(self, file_path: str):
         self.file_path: str = file_path
 
@@ -90,8 +89,7 @@ class JSONLoader:
         db_systems = []
         for game in raw_data:
             db_systems.extend([System(name=system) for system in game.systems])
-        await System.bulk_create(
-            db_systems, batch_size=100, ignore_conflicts=True)
+        await System.bulk_create(db_systems, batch_size=100, ignore_conflicts=True)
 
     async def save_genres(self, raw_data: list[RawGame]):
         genres = []
@@ -100,14 +98,18 @@ class JSONLoader:
         await Genre.bulk_create(objects=genres, ignore_conflicts=True, batch_size=100)
 
     async def save_esrbs(self, raw_data: list[RawGame]):
-        esrbs = [ESRB(code=game.esrb, description=game.esrb_description) for game in raw_data if game.esrb]
+        esrbs = [
+            ESRB(code=game.esrb, description=game.esrb_description)
+            for game in raw_data
+            if game.esrb
+        ]
         await ESRB.bulk_create(objects=esrbs, ignore_conflicts=True, batch_size=100)
 
     async def save_games(self, *, raw_data: list[RawGame]):
         limit, offset = 100, 0
         raw_games = []
         while True:
-            batch = raw_data[offset: offset + limit]
+            batch = raw_data[offset : offset + limit]
             if not batch:
                 break
 
