@@ -14,7 +14,7 @@ class RawGame(BaseModel):
     title: str = Field(alias="Game")
     systems: str | list[str] = Field(alias="System")
     x_cloud: str | bool = Field(default=False, alias="xCloud")
-    status: StatusEnum | str = Field(alias="Status")
+    status: str | StatusEnum = Field(alias="Status")
     date_added: dt.date | str | None = Field(alias="Added", default=None)
     date_removed: dt.date | str | None = Field(alias="Removed", default=None)
     date_released: dt.date | str | None = Field(alias="Release", default=None)
@@ -56,7 +56,7 @@ class RawGame(BaseModel):
             if self.date_released
             else None
         )
-        self.status = StatusEnum.get_by_value(status=self.status)
+        self.status: StatusEnum = StatusEnum.get_by_value(status=self.status)
         self.x_cloud = (
             True
             if self.x_cloud and self.x_cloud.lower().strip() in ["yes", "1", "true"]
@@ -76,9 +76,7 @@ class JSONLoader:
         await self.save_systems(raw_data=raw_game_data)
         await self.save_genres(raw_data=raw_game_data)
         await self.save_esrbs(raw_data=raw_game_data)
-
-        saved_games = await self.save_games(raw_data=raw_game_data)
-        print(saved_games)
+        await self.save_games(raw_data=raw_game_data)
 
     def _read(self) -> list[RawGame]:
         with open(self.file_path, "r") as file:

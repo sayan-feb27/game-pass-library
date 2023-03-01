@@ -11,14 +11,10 @@ class StatusEnum(Enum):
     LEAVING_SOON = "Leaving soon"
 
     @classmethod
-    def get_by_value(cls, status: Union[str, "StatusEnum"]) -> Optional["StatusEnum"]:
-        value = status if type(status) == str else status.value
+    def get_by_value(cls, status: str) -> Optional["StatusEnum"]:
         x = next(
-            (x for x in cls if x.value.strip().lower() == value.strip().lower()), None
+            (x for x in cls if x.value.strip().lower() == status.strip().lower()), None
         )
-        if not x:
-            print()
-            raise Exception(x)
         return x
 
 
