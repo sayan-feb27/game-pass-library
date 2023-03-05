@@ -3,7 +3,7 @@
 
 ## TODO:
 
-### Data
+### Data/API
 
 - [x] parse data from google [spreadsheet](https://docs.google.com/spreadsheets/d/1kspw-4paT-eE5-mrCrc4R9tg70lH2ZTFrJOUmOtOytg/edit#gid=0) using [pygsheets](https://github.com/nithinmurali/pygsheets).
 - [x] load parsed data into db.
@@ -18,6 +18,7 @@
   - [ ] games.
 - [x] fix postgresql docker container.
 - [x] entrypoint for postgres container: setup database and run migrations.
+- [ ] caching
 
 ### CI/CD
 
@@ -29,3 +30,8 @@
   - [ ] pylint
 - [ ] add nginx container.
 - [ ] deploy application to digital ocean.
+
+
+### UI/UX
+
+- [ ] IOS application??
