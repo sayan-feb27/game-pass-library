@@ -2,6 +2,7 @@ import pathlib
 from logging import config as logging_config
 
 from pydantic import BaseSettings, PostgresDsn
+from tortoise import Tortoise
 
 from src.core.logger import LOGGING
 
@@ -28,3 +29,5 @@ TORTOISE_ORM = {
         },
     },
 }
+
+Tortoise.init_models(TORTOISE_ORM["apps"]["models"]["models"], "models")

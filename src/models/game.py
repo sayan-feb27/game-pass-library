@@ -4,7 +4,7 @@ from typing import Optional, Union
 from tortoise import fields, models
 
 
-class StatusEnum(Enum):
+class StatusEnum(str, Enum):
     ACTIVE = "Active"
     COMING_SOON = "Coming soon"
     REMOVED = "Removed"

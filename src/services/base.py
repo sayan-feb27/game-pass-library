@@ -35,7 +35,7 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
         return obj
 
     async def get_multi(self, *, skip=0, limit=100) -> list[ModelType]:
-        objs = await self._model.all().offset(skip).limit(limit=limit)
+        objs = await self._model.all().offset(offset=skip).limit(limit=limit)
         return objs
 
     async def create(self, *, obj_in: CreateSchemaType) -> ModelType:
@@ -52,7 +52,5 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType, UpdateSchema
         await updated_obj.save(update_fields=obj_in_data.keys())
         return updated_obj
 
-    async def delete(self, *, obj_id: Any) -> ModelType:
-        obj = await self._model.get(pk=obj_id)
-        await obj.delete()
-        return obj
+    async def delete(self, *, obj_id: Any) -> None:
+        await self._model.filter(pk=obj_id).delete()
