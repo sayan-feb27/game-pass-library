@@ -5,9 +5,9 @@ repos:
       - id: black
         name: black-formatter
         verbose: true
+        types: [python]
         language_version: python3.10
-        stages:
-          - "commit"
+        stages: ["commit"]
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
@@ -15,6 +15,6 @@ repos:
         name: isort
         args: ["--atomic"]
         verbose: true
+        types: [python]
         language_version: python3.10
-        stages:
-          - "commit"
+        stages: ["commit"]

@@ -16,8 +16,8 @@
   - [x] systems.
   - [x] esrbs.
   - [ ] games.
-- [ ] fix postgresql docker container.
-- [ ] entrypoint for postgres container: setup database and run migrations.
+- [x] fix postgresql docker container.
+- [x] entrypoint for postgres container: setup database and run migrations.
 
 ### CI/CD
 

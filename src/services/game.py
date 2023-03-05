@@ -1,9 +1,7 @@
-from base import ModelType
-
 from schemas.game import GameCreate, GameUpdate
 from src.models.game import Game as GameModel
 
-from .base import RepositoryDB
+from .base import ModelType, RepositoryDB
 
 
 class RepositoryGame(RepositoryDB[GameModel, GameCreate, GameUpdate]):
