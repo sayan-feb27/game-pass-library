@@ -23,7 +23,7 @@
   - [x] isort, 
   - [ ] mypy, 
   - [ ] pylint
-- [ ] add traefik container.
+- [x] add traefik container.
 - [ ] deploy application to digital ocean.
 
 

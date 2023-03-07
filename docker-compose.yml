@@ -1,5 +1,14 @@
 version: "3.9"
 services:
+  reverse-proxy:
+    image: traefik:v2.9
+    ports:
+      - "80:80"
+      - "8081:8080"
+    restart: always
+    volumes:
+      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
   fastapi:
     build: .
     command: > 
@@ -7,11 +16,14 @@ services:
     container_name: game-pass-library-api
     env_file:
       - .env
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     depends_on:
       db:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
   db:
     image: postgres:14.5
     restart: always
