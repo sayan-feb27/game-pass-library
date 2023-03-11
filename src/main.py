@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
-from api.v1.base import api_router
+# isort: off
 from core.settings import TORTOISE_ORM, app_settings
+
+# isort: on
+from api.v1.base import api_router
 
 app = FastAPI()
 app.include_router(api_router, prefix="/api/v1")
