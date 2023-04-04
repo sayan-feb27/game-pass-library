@@ -27,12 +27,21 @@ async def read_game(game_id: int) -> Game:
 
 @router.post("/", response_model=Game, status_code=http.HTTPStatus.CREATED)
 async def create_game(game_in: GameCreate) -> Game:
-    game = await game_crud.create(obj_id=game_in)
+    """
+    Create a game.
+    """
+
+    game = await game_crud.create(obj_in=game_in)
+    await game.fetch_related("genres", "systems", "esrb")
     return game
 
 
 @router.put("/{game_id}", response_model=Game, status_code=http.HTTPStatus.CREATED)
 async def update_game(game_id: int, game_in: GameUpdate) -> Game:
+    """
+    Update a game.
+    """
+    # todo: check update
     game = await game_crud.create(obj_id=game_id)
     if not game:
         raise HTTPException(
@@ -45,7 +54,7 @@ async def update_game(game_id: int, game_in: GameUpdate) -> Game:
 @router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_game(*, game_id: int) -> None:
     """
-    Delete a esrb.
+    Delete a game.
     """
     game = await game_crud.get(obj_id=game_id)
     if not game:
